@@ -32,5 +32,20 @@ public class AccountBST
         return node;
     }
 
-    // Additional methods for the BST (like search, delete, etc.)
+    public Account Search(int accountNumber)
+    {
+        return Search(root, accountNumber)?.Data;
+    }
+
+    private Node Search(Node node, int accountNumber)
+    {
+        if (node == null || node.Data.AccountNumber == accountNumber)
+            return node;
+
+        if (accountNumber < node.Data.AccountNumber)
+            return Search(node.Left, accountNumber);
+        else
+            return Search(node.Right, accountNumber);
+    }
+
 }

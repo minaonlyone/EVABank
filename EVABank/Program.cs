@@ -5,7 +5,7 @@ class Program
 {
     static AccountManager accountManager = new AccountManager();
     static TransactionQueue transactionQueue = new TransactionQueue();
-    static Dictionary<int, Account> accounts = new Dictionary<int, Account>();
+    private static int lastAccountId = 0; // Class-level variable
 
     static void Main(string[] args)
     {
@@ -30,25 +30,13 @@ class Program
                     CreateAccount();
                     break;
                 case "2":
+                    HandleDeposit();
+                    break;
                 case "3":
+                    HandleWithdrawal();
+                    break;
                 case "4":
-                    if (accounts.Count == 0)
-                    {
-                        Console.WriteLine("No accounts available. Please create an account first.");
-                        break;
-                    }
-
-                    Console.Write("Enter Account Number: ");
-                    if (int.TryParse(Console.ReadLine(), out var accountNumber) && accounts.TryGetValue(accountNumber, out var account))
-                    {
-                        if (option == "2") HandleDeposit(account);
-                        else if (option == "3") HandleWithdrawal(account);
-                        else if (option == "4") Console.WriteLine($"Balance: {account.Balance}");
-                    }
-                    else
-                    {
-                        Console.WriteLine("Account not found.");
-                    }
+                    CheckBalance();
                     break;
                 case "5":
                     ProcessTransactions();
@@ -62,67 +50,90 @@ class Program
         }
     }
 
+    static int GenerateUniqueAccountId()
+    {
+        return ++lastAccountId; // Increment and return the new ID
+    }
+
     static void CreateAccount()
     {
-        var newAccountId = accounts.Count + 1;
+        var newAccountId = GenerateUniqueAccountId(); // Method to generate a unique account ID
         var newAccount = new Account(newAccountId);
-        accounts.Add(newAccountId, newAccount);
+        accountManager.AddAccount(newAccount); // Add the new account using AccountManager
         Console.WriteLine($"New account created with Account Number: {newAccountId}");
     }
 
-    static void HandleDeposit(Account account)
+
+    static void HandleDeposit()
     {
-        Console.Write("Enter deposit amount: ");
-        if (decimal.TryParse(Console.ReadLine(), out var amount))
+        Console.Write("Enter Account Number: ");
+        if (int.TryParse(Console.ReadLine(), out var accountNumber))
         {
-            var transaction = new Transaction { AccountNumber = account.AccountNumber, Amount = amount, Date = DateTime.Now };
-            transactionQueue.EnqueueTransaction(transaction);
-            Console.WriteLine("Deposit queued for processing.");
+            Console.Write("Enter deposit amount: ");
+            if (decimal.TryParse(Console.ReadLine(), out var amount))
+            {
+                var transaction = new Transaction { AccountNumber = accountNumber, Amount = amount, Date = DateTime.Now };
+                transactionQueue.EnqueueTransaction(transaction);
+                Console.WriteLine("Deposit queued for processing.");
+            }
+            else
+            {
+                Console.WriteLine("Invalid amount.");
+            }
         }
         else
         {
-            Console.WriteLine("Invalid amount.");
+            Console.WriteLine("Invalid account number.");
         }
     }
 
-    static void HandleWithdrawal(Account account)
+
+    static void HandleWithdrawal()
     {
-        Console.Write("Enter withdrawal amount: ");
-        if (decimal.TryParse(Console.ReadLine(), out var amount))
+        Console.Write("Enter Account Number: ");
+        if (int.TryParse(Console.ReadLine(), out var accountNumber))
         {
-            var transaction = new Transaction { AccountNumber = account.AccountNumber, Amount = -amount, Date = DateTime.Now };
-            transactionQueue.EnqueueTransaction(transaction);
-            Console.WriteLine("Withdrawal queued for processing.");
+            Console.Write("Enter withdraw amount: ");
+            if (decimal.TryParse(Console.ReadLine(), out var amount))
+            {
+                var transaction = new Transaction { AccountNumber = accountNumber, Amount = -amount, Date = DateTime.Now };
+                transactionQueue.EnqueueTransaction(transaction);
+                Console.WriteLine("Withdraw queued for processing.");
+            }
+            else
+            {
+                Console.WriteLine("Invalid amount.");
+            }
         }
         else
         {
-            Console.WriteLine("Invalid amount.");
+            Console.WriteLine("Invalid account number.");
+        }
+    }
+
+    static void CheckBalance()
+    {
+        Console.Write("Enter Account Number: ");
+        if (int.TryParse(Console.ReadLine(), out var accountNumber))
+        {
+            try
+            {
+                var balance = accountManager.CheckBalance(accountNumber);
+                Console.WriteLine($"Balance: {balance}");
+            }
+            catch (InvalidOperationException ex)
+            {
+                Console.WriteLine(ex.Message); // Account not found or other errors
+            }
+        }
+        else
+        {
+            Console.WriteLine("Invalid account number.");
         }
     }
 
     static void ProcessTransactions()
     {
-        while (transactionQueue.HasTransactions)
-        {
-            var transaction = transactionQueue.DequeueTransaction();
-            if (accounts.TryGetValue(transaction.AccountNumber, out var account))
-            {
-                try
-                {
-                    if (transaction.Amount >= 0) account.Deposit(transaction.Amount);
-                    else account.Withdraw(-transaction.Amount);
-
-                    Console.WriteLine($"Transaction processed for Account {transaction.AccountNumber}: {(transaction.Amount >= 0 ? "Deposit" : "Withdrawal")} of {Math.Abs(transaction.Amount)}");
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine($"Error processing transaction for Account {transaction.AccountNumber}: {e.Message}");
-                }
-            }
-            else
-            {
-                Console.WriteLine($"Account {transaction.AccountNumber} not found. Transaction skipped.");
-            }
-        }
+        accountManager.Proccess(transactionQueue);
     }
 }
