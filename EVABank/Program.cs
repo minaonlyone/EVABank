@@ -61,6 +61,15 @@ class Program
 
     static void CreateAccount()
     {
+        Console.WriteLine("Enter customer name");
+        var customerName = Console.ReadLine();
+        Console.WriteLine("Enter customer password");
+        var customerPass = Console.ReadLine();
+        Console.WriteLine("Enter customer address");
+        var customerAddress = Console.ReadLine();
+
+        var newCustoer = new Customer(customerName, customerAddress, customerPass);
+      
         var newAccountId = GenerateUniqueAccountId(); // Method to generate a unique account ID
         var newAccount = new Account(newAccountId);
         accountManager.AddAccount(newAccount); // Add the new account using AccountManager
