@@ -19,7 +19,8 @@ class Program
             Console.WriteLine("3. Withdraw");
             Console.WriteLine("4. Check Balance");
             Console.WriteLine("5. Process Transactions");
-            Console.WriteLine("6. Exit");
+            Console.WriteLine("6. Retrieve all accounts");
+            Console.WriteLine("7. Exit");
             Console.Write("Option: ");
 
             var option = Console.ReadLine();
@@ -42,6 +43,9 @@ class Program
                     ProcessTransactions();
                     break;
                 case "6":
+                    RetrieveAccountsInOrder();
+                    break;
+                case "7":
                     return;
                 default:
                     Console.WriteLine("Invalid option, please try again.");
@@ -131,9 +135,12 @@ class Program
             Console.WriteLine("Invalid account number.");
         }
     }
-
+    
     static void ProcessTransactions()
     {
         accountManager.Proccess(transactionQueue);
+    }
+    static void RetrieveAccountsInOrder() {
+        accountManager.getAccounts();
     }
 }

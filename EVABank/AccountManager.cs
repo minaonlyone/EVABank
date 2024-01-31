@@ -4,18 +4,21 @@ using System.Linq;
 public class AccountManager
 {
     private AccountBST accountTree;
+    private Queue<Account> accountQueue;
     private TransactionManager transactionManager;
 
     public AccountManager()
     {
         accountTree = new AccountBST();
         transactionManager = new TransactionManager();
+        accountQueue = new Queue<Account>();
     }
 
 
     public void AddAccount(Account account)
     {
         accountTree.Insert(account);
+        accountQueue.Enqueue(account);
     }
 
     public void Deposit(int accountNumber, decimal amount)
@@ -36,6 +39,17 @@ public class AccountManager
 
         return account.Balance;
     }
+    public void getAccounts() { 
+        if(accountQueue.Count<0)
+            return ; 
+        while(accountQueue.Count > 0)
+        {
+           var account= accountQueue.Dequeue();
+            Console.WriteLine(account.AccountNumber);
+        }
+    
+    }
+
 
     public void Proccess(TransactionQueue transactionQueue)
     {
